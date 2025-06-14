@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>管理員後台</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import {
+      getDatabase,
+      ref,
+      set,
+      remove
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import {
+      getAuth,
+      signInWithPopup,
+      GoogleAuthProvider,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAHOWYVbV3I6yPTkV6Oj5_Y8jJQDItN0Kk",
+      authDomain: "fhsh-s-star.firebaseapp.com",
+      projectId: "fhsh-s-star",
+      storageBucket: "fhsh-s-star.appspot.com",
+      messagingSenderId: "380585003479",
+      appId: "1:380585003479:web:a6a33e5f25e94c9bb06392",
+      databaseURL: "https://fhsh-s-star-default-rtdb.firebaseio.com/"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    const adminEmails = ["310164@fhsh.khc.edu.tw", "tsaiwilly0613@gmail.com"];
+
+    function showControls() {
+      document.getElementById("admin-controls").style.display = "block";
+      document.body.style.display = "block";
+    }
+
+    window.saveNames = function () {
+      const nameA = document.getElementById("singerA").value;
+      const nameB = document.getElementById("singerB").value;
+      const nameC = document.getElementById("singerC").value;
+
+      set(ref(db, "singerNames/"), {
+        A: nameA,
+        B: nameB,
+        C: nameC
+      }).then(() => {
+        alert("已儲存歌手名稱！");
+      });
+    }
+
+    window.resetVotes = function () {
+      remove(ref(db, "votes/")).then(() => {
+        alert("已清空票數！");
+      });
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      if (user && adminEmails.includes(user.email)) {
+        showControls();
+      } else if (user) {
+        alert("您不是管理員，無法進入此頁面。");
+        window.location.href = "/";
+      } else {
+        signInWithPopup(auth, provider);
+      }
+    });
+  </script>
+  <style>
+    body {
+      background-color: #f5f1e3;
+      font-family: "Georgia", serif;
+      text-align: center;
+      padding: 40px;
+      color: #2e2e2e;
+    }
+    .card {
+      background-color: #fffaf0;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      display: inline-block;
+      padding: 30px;
+      width: 300px;
+    }
+    input {
+      font-size: 18px;
+      margin: 10px 0;
+      padding: 5px;
+      width: 90%;
+    }
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #6b4f3b;
+      color: white;
+      border: none;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body style="display:none;">
+  <div class="card" id="admin-controls" style="display:none;">
+    <h1>管理員後台</h1>
+    <p>歌手 A 名稱</p>
+    <input id="singerA" type="text" placeholder="輸入名稱">
+    <p>歌手 B 名稱</p>
+    <input id="singerB" type="text" placeholder="輸入名稱">
+    <p>歌手 C 名稱</p>
+    <input id="singerC" type="text" placeholder="輸入名稱">
+    <br>
+    <button onclick="saveNames()">儲存名稱</button>
+    <button onclick="resetVotes()">重置票數</button>
+  </div>
+</body>
+</html>
